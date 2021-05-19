@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
+## Pytorch implementation of https://www.tensorflow.org/api_docs/python/tf/nn/sampled_softmax_loss. Just like tf, this defaults to loguniformsampler. 
 
 class LogUniformSampler(object):
     def __init__(self, ntokens):
