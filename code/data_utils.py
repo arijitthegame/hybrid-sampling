@@ -18,9 +18,9 @@ class Dictionary(object):
 
 
 class Corpus(object):
-  '''
-  Usage: corpus = Corpus(path). Your path must contain the keyword ptb or wiki. 
-  '''
+    '''
+        Usage: corpus = Corpus(path). Your path must contain the keyword ptb or wiki. 
+    '''
     def __init__(self, path):
         self.dictionary = Dictionary()
         if 'ptb' in path:
@@ -73,7 +73,7 @@ def batchify(data, bsz):
     return data
 
  ## Deatch to keep gradients flowing
- def repackage_hidden(h):
+def repackage_hidden(h):
     # detach
     return tuple(v.clone().detach() for v in h)
 
