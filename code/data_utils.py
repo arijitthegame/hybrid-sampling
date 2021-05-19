@@ -21,7 +21,6 @@ class Corpus(object):
   '''
   Usage: corpus = Corpus(path). Your path must contain the keyword ptb or wiki. 
   '''
-    class Corpus(object):
     def __init__(self, path):
         self.dictionary = Dictionary()
         if 'ptb' in path:
@@ -35,7 +34,8 @@ class Corpus(object):
             self.train = self.tokenize(os.path.join(path, 'wiki.train.tokens'))
             self.valid = self.tokenize(os.path.join(path, 'wiki.valid.tokens'))
             self.test = self.tokenize(os.path.join(path, 'wiki.test.tokens'))
-
+            
+    
     def tokenize(self, path):
         assert os.path.exists(path)
         # Add words to the dictionary
