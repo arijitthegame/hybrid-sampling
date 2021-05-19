@@ -115,7 +115,8 @@ def word_rank_dictionary(corpus):
     return rank_dictionary.astype(int)
 
 class Rank_Indexed_Corpus(object):
-    # Corpus using word rank as index. Can be used to train in place of the Corpus class.
+    # Corpus using word rank as index. Can be used to train in place of the Corpus class. To use it, first call the Corpus class above. 
+    # TODO: refactor the code so that you do not have to initialize the above Corpus class. 
     def __init__(self, corpus, word_rank):
         self.dictionary = self.convert_dictionary(dictionary = corpus.dictionary, word_rank = word_rank)
         self.train = self.convert_tokens(tokens = corpus.train, word_rank = word_rank)
