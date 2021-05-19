@@ -2,16 +2,27 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-## A simple biLSTM model
+## A simple LSTM or bilSTM model
 class RNNModel(nn.Module):
 
-    def __init__(self, ntoken, ninp, nhid, nlayers, dropout=0.5):
+    def __init__(self, ntoken, ninp, nhid, nlayers, directions, dropout=0.5):
         super(RNNModel, self).__init__()
         self.drop = nn.Dropout(dropout)
         self.encoder = nn.Embedding(ntoken, ninp) # Token2Embeddings
+        self.directions = directions
         
-        self.rnn = nn.LSTM(ninp, nhid, nlayers, bidirectional=True, dropout=dropout) #(seq_len, batch_size, emb_size)
-        self.decoder = nn.Linear(2*nhid, ntoken)
+        if self.directions == 1: 
+            self.rnn = nn.LSTM(ninp, nhid, nlayers, bidirectional=False, dropout=dropout) #(seq_len, batch_size, emb_size)
+            self.decoder = nn.Linear(nhid, ntoken)
+            
+        elif self.directions == 2:
+            self.rnn = nn.LSTM(ninp, nhid, nlayers, bidirectional=True, dropout=dropout) #(seq_len, batch_size, emb_size)
+            self.decoder = nn.Linear(2*nhid, ntoken)
+        
+        else:  
+            print("Invalid number of directions. Can not initialize model.")
+            
+       # self.decoder = nn.Linear(2*nhid, ntoken)
         self.init_weights()
         self.nhid = nhid
         self.nlayers = nlayers
@@ -35,9 +46,15 @@ class RNNModel(nn.Module):
         return decoded, hidden
 
 
-    def init_hidden(self, bsz):
-       
-        h, c = (Variable(torch.zeros(self.nlayers * 2, bsz, self.nhid)).to(device),
+    def init_hidden(self, bsz, directions):
+        if directions == 2:
+            h, c = (Variable(torch.zeros(self.nlayers * 2, bsz, self.nhid)).to(device),
                 Variable(torch.zeros(self.nlayers * 2, bsz, self.nhid)).to(device))
-
+            
+        else: 
+            h, c = (Variable(torch.zeros(self.nlayers, bsz, self.nhid)).to(device),
+                Variable(torch.zeros(self.nlayers, bsz, self.nhid)).to(device))
+            
         return h, c
+    
+    
