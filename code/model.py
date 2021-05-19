@@ -48,12 +48,12 @@ class RNNModel(nn.Module):
 
     def init_hidden(self, bsz, directions):
         if directions == 2:
-            h, c = (Variable(torch.zeros(self.nlayers * 2, bsz, self.nhid)).to(device),
-                Variable(torch.zeros(self.nlayers * 2, bsz, self.nhid)).to(device))
+            h, c = (Variable(torch.zeros(self.nlayers * 2, bsz, self.nhid)),
+                Variable(torch.zeros(self.nlayers * 2, bsz, self.nhid)))
             
         else: 
-            h, c = (Variable(torch.zeros(self.nlayers, bsz, self.nhid)).to(device),
-                Variable(torch.zeros(self.nlayers, bsz, self.nhid)).to(device))
+            h, c = (Variable(torch.zeros(self.nlayers, bsz, self.nhid)),
+                Variable(torch.zeros(self.nlayers, bsz, self.nhid)))
             
         return h, c
     
