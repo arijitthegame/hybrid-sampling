@@ -3,4 +3,6 @@ Code to run hybrid sampling schemes to compare against the softmax sampling. All
 Added: sampled softmax. This is a simple reimplementation of https://www.tensorflow.org/api_docs/python/tf/nn/sampled_softmax_loss
 <br/>
 
-The code needs cleanup. Will combine the LSTMs in the near future by removing the directions arguments.
+The code needs cleanup. <br/>
+
+#TODO: Add other sampling methods.
