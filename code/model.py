@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
+
 ## A simple LSTM or bilSTM model
 class RNNModel(nn.Module):
 
@@ -56,5 +57,12 @@ class RNNModel(nn.Module):
                 Variable(torch.zeros(self.nlayers, bsz, self.nhid)))
             
         return h, c
-    
+
+
+class Identity(nn.Module):
+    def __init__(self):
+        super(Identity, self).__init__()
+        
+    def forward(self, x):
+        return x
     
