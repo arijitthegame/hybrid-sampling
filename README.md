@@ -5,4 +5,6 @@ Added: sampled softmax. This is a simple reimplementation of https://www.tensorf
 
 The code needs cleanup. <br/>
 
-#TODO: Add other sampling methods.
+#TODO: Add other sampling methods. <br/>
+
+Implementation of https://papers.nips.cc/paper/2019/file/e43739bba7cdb577e9e3e4e42447f5a5-Paper.pdf
