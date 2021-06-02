@@ -2,9 +2,12 @@ Code to run hybrid sampling schemes to compare against the softmax sampling. All
 <br/>
 Added: sampled softmax. This is a simple reimplementation of https://www.tensorflow.org/api_docs/python/tf/nn/sampled_softmax_loss
 <br/>
+Added RFF and FAVOR+ kernels. <br/>
 
 The code needs cleanup. <br/>
 
 #TODO: Add other sampling methods. <br/>
+
+#TODO: Add hybrid variant. <br/>
 
 Implementation of https://papers.nips.cc/paper/2019/file/e43739bba7cdb577e9e3e4e42447f5a5-Paper.pdf
