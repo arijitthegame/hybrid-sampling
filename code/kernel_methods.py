@@ -2,6 +2,7 @@ import math
 import torch 
 import torch.nn as nn
 import torch.distributions as distributions
+from scipy.linalg import orth
 
 class RFF():
     def __init__(self, gamma = 1, D = 50):
@@ -74,13 +75,18 @@ class FavorPlus():
         w = p.sample(torch.Size([self.D]))
         return w
 
-        #TODO : Create orthogonal features
+    def orthogonalize(self, X):
+        """ Generate orthogonal features"""
+        
+        w = self.generate(X)
+        w_orth = orth(w.t().numpy())
+        return torch.from_numpy(w_orth).t()
     
     def transform(self,X):
         """ Transforms the data X (n_samples, n_features) to the new map space Z(X) (n_samples, n_components)"""
         #Compute feature map Z(x):
         
-        w = self.generate(X)
+        w = self.orthogonalize(X)
        
         Z = math.sqrt(2/self.D)*torch.exp(torch.matmul(X,w.t()))*(torch.exp(-torch.linalg.norm(X, dim=1)**2)).view(-1,1)
         return Z
