@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from scipy.stats import wasserstein_distance
 
-def compute_wass(a_hist, b_hist):
+def compute_wass_hist(a_hist, b_hist):
     ''' Compute Wasserstein distance between 2 histograms
     Histograms are of shape (number of samples, dims). 
     Usage: given an input, compute distance between softmax and approx softmax
@@ -32,3 +32,7 @@ def kl_divergence(a_hist, b_hist):
          div.append(sum(a_hist[j][i] * log2(a_hist[j][i]/b_hist[j][i]) for i in range(a_hist.shape[1])))
                
     return sum(div)/len(div)
+
+#TODO Add Wasserstein or Sliced Wasserstein distances between softmax vectors and the approx softmax vectors. 
+# But this time we do not normalize the approx softmax vectors and just treat them as vectors and the points (i.e. word probabilities are either uniform 
+# or the relative frequency of the word)
