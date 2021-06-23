@@ -20,6 +20,7 @@ parser.add_argument('--output_dim', type=int, default=128)
 parser.add_argument('--n_layers', type=int, default=2)
 parser.add_argument('--directions', type=int, default =1, help = 'Choose a bilSTM vs a LSTM')
 parser.add_argument('--dropout', type=float, default=.5)
+parser.add_argument('--tie_weight', type=bool, default=False, help = 'Tie the weights of the output layer with the embedding')
 parser.add_argument('--lr', type=float, default=.001)
 parser.add_argument('--weight_decay', type=float, default=.0001)
 parser.add_argument('--clip', type=float, default=1.0)
@@ -61,14 +62,15 @@ test_data = batchify(corpus.test, args.eval_batch_size)
 ntokens = len(corpus.dictionary)
 
 #Initilaize the model 
-net = model.RNNModel(ntokens, args.hidden_size, args.output_dim, args.n_layers, args.directions,args.dropout)
+net = model.RNNModel(ntokens, args.hidden_size, args.output_dim, args.n_layers, args.directions, args.dropout, args.tie_weight)
+print(net)
 net.to(device)
 if args.softmax_type=='sampled':
 
     sampled_softmax = SampledSoftmax(ntokens, nsampled=args.softmax_nsampled, nhid=args.output_dim*args.directions, tied_weight = None)
     net.decoder = model.Identity()
     net.add_module("decoder_softmax", sampled_softmax)
-### For more usage of the weight tying, please see the trainer.ipynb
+##TODO Fix this weight tying and not use model.Identity
 
 opt = torch.optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 criterion = nn.CrossEntropyLoss()
