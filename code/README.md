@@ -11,3 +11,5 @@ For the purposes of our paper, we will only use weight tied model. All other fun
 TODO: Pass a flag allowing us to choose initrange in the main.py
 <br/>
 TODO: Annealing of the learning rates as is recommended.
+<br/>
+Small bug in SWD computation. #TODO Push the fix. 
