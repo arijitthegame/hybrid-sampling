@@ -13,3 +13,5 @@ TODO: Pass a flag allowing us to choose initrange in the main.py
 TODO: Annealing of the learning rates as is recommended.
 <br/>
 Small bug in SWD computation. #TODO Push the fix. 
+<br/>
+Add the Walker's sampling method
