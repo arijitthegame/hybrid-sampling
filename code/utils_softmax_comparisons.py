@@ -41,7 +41,8 @@ def get_model_embeddings(data_source, net, bptt):
 def get_true_softmax_scores(data_source, net, bptt):
     # Turn on evaluation mode which disables dropout.
                              
-    """Computes the true softmax scores. 
+    """
+    Computes the true softmax scores. 
     Args: data_source = test dataloder
           net = trained LSTM with weight tied
           bptt = Batch size as defined in the args in main.py
