@@ -10,8 +10,6 @@ For the purposes of our paper, we will only use weight tied model. All other fun
 <br/>
 TODO: Pass a flag allowing us to choose initrange in the main.py
 <br/>
-TODO: Annealing of the learning rates as is recommended.
+TODO: Annealing of the learning rates as is recommended. Add a simple lr scheduler. 
 <br/>
-Small bug in SWD computation. #TODO Push the fix. 
-<br/>
-Add the Walker's sampling method
+
