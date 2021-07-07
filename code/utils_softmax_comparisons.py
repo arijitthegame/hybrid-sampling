@@ -39,7 +39,6 @@ def get_model_embeddings(data_source, net, bptt):
       
       
 def get_true_softmax_scores(data_source, net, bptt):
-                             
     """Computes the true softmax scores. 
     Args: data_source = test dataloder
           net = trained LSTM with weight tied
