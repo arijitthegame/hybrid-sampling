@@ -109,7 +109,63 @@ class FavorPlus():
         approx = torch.mm(X1,Y1.t())*Lambda.view(-1,1)
         return approx
 
-    #TODO: Bug somewhere since the computed matrices are far from stochastic
+ 
+class Hybrid():
+    def __init__(self, gamma = 1, d_trig = 50, d_ang = 50):
+        '''
+        Random positive  Features to approximate a Gaussian Kernel. 
+        D = output dimension of the features
+        gamma = temperature, where the kernel K(x-y) = exp(-gamma/2 ||x-y||^2)
+        '''
+        self.gamma = gamma
+        self.d_trig = d_trig
+        self.d_ang = d_ang
+    
+
+    def generate(self, X):
+        """ Generates random samples from isotropic Gaussian """
+        d = X.shape[1]
+       
+        p = distributions.multivariate_normal.MultivariateNormal(torch.zeros(d), math.sqrt(self.gamma)*torch.eye(d)) 
+       
+        #Generate iid samples from p(w) 
+        
+        w_trig, w_ang = p.sample(torch.Size([self.d_trig])), p.sample(torch.Size([self.d_ang]))
+        
+        uniform = distributions.uniform.Uniform(torch.tensor([0.0]), torch.tensor([2*math.pi]))
+        u = uniform.sample(torch.Size([self.d_trig]))
+        return w_trig, w_ang, u
+
+    
+    def transform_trig(self,X):
+        """ Transforms the data X (n_samples, n_features) to the new map space Z(X) (n_samples, n_components)
+            Applying the trigonometric feature map
+        """
+     
+        
+        w_trig, _,  u = self.transform(X)
+       
+        Z_trig = math.sqrt(2/self.d_trig)*torch.cos(torch.matmul(X,w_trig.t()) + self.u.squeeze())
+        return Z
+    
+    def transform_angular(self, X):
+        """
+        Compute the approximator for the angular kernel.
+        """
+        _, w_ang, _ = self.transform(X)
+        Z_ang = math.sqrt(1/self.d_ang) torch.sign(torch.matmul(X, w_ang.t()))
+        return Z_ang
+    
+    #def compute_hybrid(self, X) :
+#     """
+#     Computes the outer/tensor product of the above features. 
+#     Tensors: (b,d_trig) \otimes (b,d_ang) -> (b, d_trig, d_ang)
+#     """
+       #Z_ang, Z_trig = self.transform_angular(X), self.transform_trig(X) 
+    #   Z_hyb = torch.einsum('bi,bj->bij', (Z_ang, Z_trig))
+        
+  #TODO Add tensor product and compute the hybrid features. 
+#np.einsum(“i, j -> ij”, vec, vec)
 
 
 
