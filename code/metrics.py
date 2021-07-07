@@ -35,25 +35,23 @@ def kl_divergence(a_hist, b_hist):
                
     return sum(div)/len(div)
 
-def compute_sliced_wass(source_dist, target_dist, weights='uniform', n_seed=42, n_proj = 25):
+def compute_sliced_wass(source_dist, target_dist,  n_iter=60):
     """
      Sliced Wasserstein distances between softmax vectors and the approx softmax vectors. 
      This time we do not normalize the approx softmax vectors and just treat them as vectors (locations) and an empirical measure on the vectors 
-     (i.e. probabilities are either uniform)
+     (i.e. uniform probabilities)
     """
     n_samples = source_dist.shape[0]
     a, b = np.ones((n_samples,)) / n_samples, np.ones((n_samples,)) / n_samples
     #TODO: FIX start and end of logspace
-    n_projections_arr = np.logspace(0, 4, n_proj, dtype=int)
-    res = np.empty((n_seed, 25))
+    n_projections_arr = np.logspace(1, 4, n_iter, dtype=int)
+    random_seed = np.random.choice(10000, n_iter)
 
-    for seed in range(n_seed):
-        for i, n_projections in enumerate(n_projections_arr):
-            res[seed, i] = ot.sliced.sliced_wasserstein_distance(xs, xt, a, b, n_projections, seed)
+    res = [] 
+    for i,j in zip(n_projections_arr,random_seed):
+        res.append(ot.sliced_wasserstein_distance(source_dist, true_dist, a, b, i, j))
 
-    res_mean = np.mean(res, axis=0)
-    res_std = np.std(res, axis=0)
-    return res_mean, res_std
+    return np.mean(res), np.std(res)
 
 class SinkhornDistance(nn.Module):
     r"""
