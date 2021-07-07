@@ -8,8 +8,10 @@ Added RFF and FAVOR+ kernels. <br/>
 
 The code needs cleanup. <br/>
 
-#TODO: Add other sampling methods. <br/>
+Added Alias sampling methods. https://lips.cs.princeton.edu/the-alias-method-efficient-sampling-with-many-discrete-outcomes/ <br/>
 
-#TODO: Add hybrid variant. <br/>
+WIP: Adding hybrid variant. <br/>
 
-Implementation of https://papers.nips.cc/paper/2019/file/e43739bba7cdb577e9e3e4e42447f5a5-Paper.pdf
+Implementation of https://papers.nips.cc/paper/2019/file/e43739bba7cdb577e9e3e4e42447f5a5-Paper.pdf <br/>
+
+Possible bugs in kernel methods. Need code review. #CHECK
