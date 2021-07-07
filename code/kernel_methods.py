@@ -4,6 +4,8 @@ import torch.nn as nn
 import torch.distributions as distributions
 from scipy.linalg import orth
 
+#TODO : Possible bug since I am generating different \omega for X and Y.
+
 class RFF():
     def __init__(self, gamma = 1, D = 50):
         '''
@@ -100,7 +102,7 @@ class FavorPlus():
 
     def approximate_softmax(self,X,Y):
         """ Computes the approximate softmax kernel"""
-        #TODO Use orthogonal vectors instead of just random
+    
         Z = X + Y
         X1, Y1 = self.transform(X), self.transform(Y)
         Lambda = torch.exp((torch.linalg.norm(X,dim=1)**2 + torch.linalg.norm(Y,dim=1)**2)/2.0) 
