@@ -3,6 +3,7 @@ import pickle
 
 ## Implementation of a HuffmanTree for a heirarchical softmax. 
 ## The nodes are the words in the vocab. We store the node along with the probabilities. 
+#WIP
 
 class Node:
     def __init__(self, token, freq, nhid):
