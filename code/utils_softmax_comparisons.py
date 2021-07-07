@@ -4,6 +4,7 @@ from data_utils import *
 
 #These functions needs a pretrained model. Load the model first and pass in the model in net. 
 # You also need the dataset to be loaded as well. You will need the test set as the data source and the corpus for the whole dataset.
+# See the ipynb files in the experiments folder.
 
 
 def get_model_embeddings(data_source, net):
