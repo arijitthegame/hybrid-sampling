@@ -30,7 +30,7 @@ def get_model_embeddings(data_source, net, bptt):
           
             output, hidden = net.rnn(emb, hidden)
             
-            model_out.append(output.reshape(-1, output.shape[-1])
+            model_out.append(output.reshape(-1, output.shape[-1]))
             # model input and output
             # inputdata size(bptt, bsz), and size(bptt, bsz, embsize) after embedding
             # output size(bptt*bsz, ntoken)
