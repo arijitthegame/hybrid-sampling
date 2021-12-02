@@ -10,6 +10,4 @@ For the purposes of our paper, we will only use weight tied model. All other fun
 <br/>
 TODO: Pass a flag allowing us to choose initrange in the main.py
 <br/>
-TODO: Annealing of the learning rates as is recommended. Add a simple lr scheduler. 
-<br/>
-
+Use softmax_sampling_numpy.py and not kernel_methods.py. There are bugs in the code in the kernel methods and will be fixed shortly.
