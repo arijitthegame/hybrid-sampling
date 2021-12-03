@@ -4,14 +4,13 @@ Added: sampled softmax. This is a simple reimplementation of https://www.tensorf
 <br/>
 Added weight tying as in https://arxiv.org/pdf/1608.05859v3.pdf
 <br/>
-Added RFF and FAVOR+ kernels. <br/>
+Added all the kernel methods except the clustering estimators. <br/>
 
 The code needs cleanup. <br/>
 
 Added Alias sampling methods. https://lips.cs.princeton.edu/the-alias-method-efficient-sampling-with-many-discrete-outcomes/ <br/>
 
-WIP: Adding hybrid variant. <br/>
+
 
 Implementation of https://papers.nips.cc/paper/2019/file/e43739bba7cdb577e9e3e4e42447f5a5-Paper.pdf <br/>
 
-Possible bugs in kernel methods. Need code review. #CHECK
