@@ -1,171 +1,205 @@
 import math
-import torch 
-import torch.nn as nn
-import torch.distributions as distributions
-from scipy.linalg import orth
+import numpy as np
 
-#TODO : Possible bug since I am generating different \omega for X and Y.
 
-class RFF():
-    def __init__(self, gamma = 1, D = 50):
-        '''
-        Random Fourier Features to approximate a Gaussian Kernel. 
-        D = output dimension of the features
-        gamma = temperature, where the kernel K(x-y) = exp(-gamma/2 ||x-y||^2)
-        '''
-        self.gamma = gamma
-        self.D = D
-        
-    def generate(self, X):
-        """ Generates random samples from isotropic Gaussian """
-        d = X.shape[1]
-       
-        p = distributions.multivariate_normal.MultivariateNormal(torch.zeros(d),
-  math.sqrt(self.gamma)*torch.eye(d)) 
-       
-        #Generate D iid samples from p(w) 
-        
-        self.w = p.sample(torch.Size([self.D]))
+
+def gram_schmidt_columns(X):
+    '''
+    Using QR decomoposition to obtain orthogonal matrix.
+    
+    Parameters
+    ----------
+    X : matrix, dimension = m * d, where m <= d
+        Random feature matrix with l2 normalized row.
+    Returns
+    -------
+    Q : matrix, dimension = m * d, where m <= d
+        Orthogonal random feature matrix with l2 normalized row.
+    '''
+    Q, R = np.linalg.qr(X)
+    return Q
+
+def orthgonalize(V):
+    '''
+    Generate matrix with multiple orthogonal blocks
+    Parameters
+    ----------
+    V : matrix, dimension = m * d, where m > d
+        Random feature matrix with l2 normalized row.
+    Returns
+    -------
+    V_ : TYPE
+        Random feature matrix with l2 normalized row and multiple
+        blocks.
+    '''
+    N = V.shape[0]
+    d = V.shape[1]
+    turns = int(N/d)
+    remainder = N%d
+
+    if turns:
+        V_ = np.zeros_like(V)
+
+        for i in range(turns):
+            v = gram_schmidt_columns(V[i*d:(i+1)*d, :].T).T
+            V_[i*d:(i+1)*d, :] = v
+        if remainder != 0:
+            V_[(i+1)*d:,:] = gram_schmidt_columns(V[(i+1)*d:,:].T).T
+    else:
+        V_ = gram_schmidt_columns(V.T).T
+
+    return V_
+
+def orthogonal_gau(dim_0, dim_1):
+
+    V = np.random.normal(0, 1, (dim_0, dim_1))
+    norms = np.linalg.norm(V, axis = 1)[:, np.newaxis]
+    V_orth = orthgonalize(V)
+    
+    return V_orth*norms
+
+"""
+RFF
+"""
+
+def trig_att(x, y, random_feats_sfm, normalize=False):
+    
+    l, d = x.shape
+  
+    normalizer = 1 / (d ** 0.25) if normalize else 1
+    
+    x = x * normalizer
+    y = y * normalizer
+    
+    x_feat = np.sqrt(1/(random_feats_sfm.shape[0])) *\
+                 np.exp(np.linalg.norm(x, axis = 1)**2/2)[:, np.newaxis] *\
+                 np.vstack((np.sin(random_feats_sfm.dot(x.T)), \
+                            np.cos(random_feats_sfm.dot(x.T)))).T
+    
+    y_feat = np.sqrt(1/(random_feats_sfm.shape[0])) *\
+                 np.exp(np.linalg.norm(y, axis = 1)**2/2)[:, np.newaxis] *\
+                 np.vstack((np.sin(random_feats_sfm.dot(y.T)), \
+                            np.cos(random_feats_sfm.dot(y.T)))).T
       
-                
-        #Generate D iid samples from Uniform(0,2*pi)
-        uniform = distributions.uniform.Uniform(torch.tensor([0.0]), torch.tensor([2*math.pi]))
-        self.u = uniform.sample(torch.Size([self.D]))
+  
+    return np.dot(x_feat, y_feat.T)
+
+'''
+FAVOR+
+'''
+
+def pos_att(x, y, random_feats_sfm, normalize=False):
+    
+    l, d = x.shape
+  
+    normalizer = 1 / (d ** 0.25) if normalize else 1
+    
+    x = x * normalizer
    
-        return self.w, self.u
     
-    def transform(self,X):
-        """ Transforms the data X (n_samples, n_features) to the new map space Z(X) (n_samples, n_components)"""
-        #Compute feature map Z(x):
-        
-        self.w, self.u = self.generate(X)
-       
-        Z = math.sqrt(2/self.D)*torch.cos(torch.matmul(X,(self.w).t()) + self.u.squeeze())
-        return Z
+    x_feat = np.sqrt(1/(2*random_feats_sfm.shape[0])) * \
+                    np.exp(-np.linalg.norm(x, axis = 1)**2/2)[:, np.newaxis] *\
+                    np.vstack((np.exp(random_feats_sfm.dot(x.T)), \
+                                np.exp(-random_feats_sfm.dot(x.T)))).T
+    del x
+    #print('x_feat shape ', x_feat.shape)  
+    y = y * normalizer
+    y_feat = np.sqrt(1/(2*random_feats_sfm.shape[0])) * \
+                    np.exp(-np.linalg.norm(y, axis = 1)**2/2)[:, np.newaxis] *\
+                    np.vstack((np.exp(random_feats_sfm.dot(y.T)), \
+                                np.exp(-random_feats_sfm.dot(y.T)))).T
+    #print('y_feat shape ', y_feat.shape)    
     
-    def compute_kernel(self, X):
-        """ Computes the approximated kernel matrix K """
-        
-        Z = self.transform(X)
-        K = torch.matmul(Z,Z.t())
-        return K
+    del y
+    return np.dot(x_feat, y_feat.T)
 
+'''
+Angular Kernel
+'''
 
-def cosh(X):
-    return (torch.exp(X)+torch.exp(-X))/2.0
+def ang_hyb_lambda(x, y, random_feats_lambda, normalize=False):
+    
+    l, d = x.shape
+  
+    normalizer = 1 / (d ** 0.25) if normalize else 1
+    
+    x = x * normalizer
+    
+    x_feat = np.hstack((np.repeat(np.sqrt(1/2), x.shape[0])[:, np.newaxis],\
+                                      (1j*np.sqrt(1/(2*random_feats_lambda.shape[0])) *\
+                                      np.sign(random_feats_lambda.dot(x.T))).T))
+    
+    del x 
+    
+    y = y * normalizer
+    y_feat = np.hstack((np.repeat(np.sqrt(1/2), y.shape[0])[:, np.newaxis],\
+                                      (1j*np.sqrt(1/(2*random_feats_lambda.shape[0])) *\
+                                      np.sign(random_feats_lambda.dot(y.T))).T))
+    
+    del y
+  
+    return np.dot(x_feat, y_feat.T).real
 
-class FavorPlus():
-    def __init__(self, gamma = 1, D = 50):
-        '''
-        Random positive  Features to approximate a Gaussian Kernel. 
-        D = output dimension of the features
-        gamma = temperature, where the kernel K(x-y) = exp(-gamma/2 ||x-y||^2)
-        '''
-        self.gamma = gamma
-        self.D = D
-        
-    
+'''
+Gaussian lambda coefficient kernel
+'''
 
-    def generate(self, X):
-        """ Generates random samples from isotropic Gaussian """
-        d = X.shape[1]
-       
-        p = distributions.multivariate_normal.MultivariateNormal(torch.zeros(d), math.sqrt(self.gamma)*torch.eye(d)) 
-       
-        #Generate D iid samples from p(w) 
-        
-        w = p.sample(torch.Size([self.D]))
-        return w
+def gau_hyb_lambda(x, y, random_feats_lambda, lambda_=1, normalize=False):
+    
+    l, d = x.shape
+  
+    normalizer = 1 / (d ** 0.25) if normalize else 1
+    
+    x = x * normalizer
 
-    def orthogonalize(self, X):
-        """ Generate orthogonal features"""
-        
-        w = self.generate(X)
-        w_orth = orth(w.t().numpy())
-        return torch.from_numpy(w_orth).t()
+    x_feat = (1*np.sqrt(1/(random_feats_lambda.shape[0])) *\
+                      np.vstack((np.sin(lambda_*random_feats_lambda.dot(x.T)), \
+                                np.cos(lambda_*random_feats_lambda.dot(x.T))))).T
+      
+    del x
     
-    def transform(self,X):
-        """ Transforms the data X (n_samples, n_features) to the new map space Z(X) (n_samples, n_components)"""
-        #Compute feature map Z(x):
-        
-        w = self.orthogonalize(X)
-       
-        Z = math.sqrt(2/self.D)*torch.exp(torch.matmul(X,w.t()))*(torch.exp(-torch.linalg.norm(X, dim=1)**2)).view(-1,1)
-        return Z
+    y = y * normalizer
+    y_feat = (1*np.sqrt(1/(random_feats_lambda.shape[0])) *\
+                      np.vstack((np.sin(lambda_*random_feats_lambda.dot(y.T)), \
+                                np.cos(lambda_*random_feats_lambda.dot(y.T))))).T
     
-    def compute_kernel(self, X):
-        """ Computes the approximated kernel matrix K """
-        
-        Z = self.transform(X)
-        K = torch.matmul(Z,Z.t())
-        return K
+    del y  
+    return np.dot(x_feat, y_feat.T)
 
-    def approximate_softmax(self,X,Y):
-        """ Computes the approximate softmax kernel"""
-    
-        Z = X + Y
-        X1, Y1 = self.transform(X), self.transform(Y)
-        Lambda = torch.exp((torch.linalg.norm(X,dim=1)**2 + torch.linalg.norm(Y,dim=1)**2)/2.0) 
-        approx = torch.mm(X1,Y1.t())*Lambda.view(-1,1)
-        return approx
+'''
+ANGULAR HYBRID: COMBINING THE FAVOR+ AND RFF USING THE ANGULAR KERNEL LINEARIZATION
+'''
 
- 
-class Hybrid():
-    def __init__(self, gamma = 1, d_trig = 50, d_ang = 50):
-        '''
-        Random positive  Features to approximate a Gaussian Kernel. 
-        D = output dimension of the features
-        gamma = temperature, where the kernel K(x-y) = exp(-gamma/2 ||x-y||^2)
-        '''
-        self.gamma = gamma
-        self.d_trig = d_trig
-        self.d_ang = d_ang
-    
+def ang_hyb_att(x, y, random_feats_sfm, random_feats_lambda, normalize=True):
 
-    def generate(self, X):
-        """ Generates random samples from isotropic Gaussian """
-        d = X.shape[1]
-       
-        p = distributions.multivariate_normal.MultivariateNormal(torch.zeros(d), math.sqrt(self.gamma)*torch.eye(d)) 
-       
-        #Generate iid samples from p(w) 
-        
-        w_trig, w_ang = p.sample(torch.Size([self.d_trig])), p.sample(torch.Size([self.d_ang]))
-        
-        uniform = distributions.uniform.Uniform(torch.tensor([0.0]), torch.tensor([2*math.pi]))
-        u = uniform.sample(torch.Size([self.d_trig]))
-        return w_trig, w_ang, u
+    approx_softmax_trig_hyb = trig_att(x, y, random_feats_sfm, normalize=True)
+            
+    approx_softmax_pos_hyb = pos_att(x, y, random_feats_sfm, normalize=True)
+    
+    approx_softmax_ang = ang_hyb_lambda(x, y, random_feats_lambda, normalize=True)
 
-    
-    def transform_trig(self,X):
-        """ Transforms the data X (n_samples, n_features) to the new map space Z(X) (n_samples, n_components)
-            Applying the trigonometric feature map
-        """
-     
-        
-        w_trig, _,  u = self.transform(X)
-       
-        Z_trig = math.sqrt(2/self.d_trig)*torch.cos(torch.matmul(X,w_trig.t()) + self.u.squeeze())
-        return Z
-    
-    def transform_angular(self, X):
-        """
-        Compute the approximator for the angular kernel.
-        """
-        _, w_ang, _ = self.transform(X)
-        Z_ang = math.sqrt(1/self.d_ang) torch.sign(torch.matmul(X, w_ang.t()))
-        return Z_ang
-    
-    #def compute_hybrid(self, X) :
-#     """
-#     Computes the outer/tensor product of the above features. 
-#     Tensors: (b,d_trig) \otimes (b,d_ang) -> (b, d_trig, d_ang)
-#     """
-       #Z_ang, Z_trig = self.transform_angular(X), self.transform_trig(X) 
-    #   Z_hyb = torch.einsum('bi,bj->bij', (Z_ang, Z_trig))
-        
-  #TODO Add tensor product and compute the hybrid features. 
-#np.einsum(“i, j -> ij”, vec, vec)
+    approx_softmax_hyb_ang = np.multiply((approx_softmax_ang), approx_softmax_pos_hyb) + \
+                            np.multiply((1 - approx_softmax_ang), approx_softmax_trig_hyb)
+
+    del approx_softmax_trig_hyb, approx_softmax_pos_hyb, approx_softmax_ang
+    return approx_softmax_hyb_ang
+
+'''
+GAUSSIAN HYBRID: COMBINING THE FAVOR+ AND RFF USING THE GAUSSIAN LAMBDA KERNEL LINEARIZATION
+'''
+def gau_hyb_att(x, y, random_feats_sfm, random_feats_lambda, normalize=True):
+
+    approx_softmax_trig_hyb = trig_att(x, y, random_feats_sfm, normalize=True)
+            
+    approx_softmax_pos_hyb =pos_att(x, y, random_feats_sfm, normalize=True)
+
+    approx_softmax_gau = gau_hyb_lambda(x, y, random_feats_lambda, normalize=True)
+            
+    approx_softmax_hyb_gau = np.multiply((1-approx_softmax_gau), approx_softmax_pos_hyb) + \
+                            np.multiply(approx_softmax_gau, approx_softmax_trig_hyb)
+
+    del approx_softmax_trig_hyb, approx_softmax_pos_hyb, approx_softmax_gau
+    return approx_softmax_hyb_gau
 
 
 
