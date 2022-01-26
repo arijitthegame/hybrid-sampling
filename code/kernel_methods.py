@@ -1,7 +1,9 @@
 import math
 import numpy as np
 
-
+'''
+Code for all the kernel methods.
+'''
 
 def gram_schmidt_columns(X):
     '''
@@ -58,10 +60,6 @@ def orthogonal_gau(dim_0, dim_1):
     
     return V_orth*norms
 
-"""
-RFF
-"""
-
 def trig_att(x, y, random_feats_sfm, normalize=False):
     
     l, d = x.shape
@@ -75,18 +73,14 @@ def trig_att(x, y, random_feats_sfm, normalize=False):
                  np.exp(np.linalg.norm(x, axis = 1)**2/2)[:, np.newaxis] *\
                  np.vstack((np.sin(random_feats_sfm.dot(x.T)), \
                             np.cos(random_feats_sfm.dot(x.T)))).T
-    
+
     y_feat = np.sqrt(1/(random_feats_sfm.shape[0])) *\
                  np.exp(np.linalg.norm(y, axis = 1)**2/2)[:, np.newaxis] *\
                  np.vstack((np.sin(random_feats_sfm.dot(y.T)), \
                             np.cos(random_feats_sfm.dot(y.T)))).T
-      
   
     return np.dot(x_feat, y_feat.T)
 
-'''
-FAVOR+
-'''
 
 def pos_att(x, y, random_feats_sfm, normalize=False):
     
@@ -102,20 +96,16 @@ def pos_att(x, y, random_feats_sfm, normalize=False):
                     np.vstack((np.exp(random_feats_sfm.dot(x.T)), \
                                 np.exp(-random_feats_sfm.dot(x.T)))).T
     del x
-    #print('x_feat shape ', x_feat.shape)  
+    
     y = y * normalizer
     y_feat = np.sqrt(1/(2*random_feats_sfm.shape[0])) * \
                     np.exp(-np.linalg.norm(y, axis = 1)**2/2)[:, np.newaxis] *\
                     np.vstack((np.exp(random_feats_sfm.dot(y.T)), \
                                 np.exp(-random_feats_sfm.dot(y.T)))).T
-    #print('y_feat shape ', y_feat.shape)    
+     
     
     del y
     return np.dot(x_feat, y_feat.T)
-
-'''
-Angular Kernel
-'''
 
 def ang_hyb_lambda(x, y, random_feats_lambda, normalize=False):
     
@@ -128,21 +118,18 @@ def ang_hyb_lambda(x, y, random_feats_lambda, normalize=False):
     x_feat = np.hstack((np.repeat(np.sqrt(1/2), x.shape[0])[:, np.newaxis],\
                                       (1j*np.sqrt(1/(2*random_feats_lambda.shape[0])) *\
                                       np.sign(random_feats_lambda.dot(x.T))).T))
-    
+    #print('x_feat shape ', x_feat.shape)  
     del x 
     
     y = y * normalizer
     y_feat = np.hstack((np.repeat(np.sqrt(1/2), y.shape[0])[:, np.newaxis],\
                                       (1j*np.sqrt(1/(2*random_feats_lambda.shape[0])) *\
                                       np.sign(random_feats_lambda.dot(y.T))).T))
-    
+    #print('y_feat shape ', y_feat.shape) 
     del y
   
     return np.dot(x_feat, y_feat.T).real
 
-'''
-Gaussian lambda coefficient kernel
-'''
 
 def gau_hyb_lambda(x, y, random_feats_lambda, lambda_=1, normalize=False):
     
@@ -155,7 +142,7 @@ def gau_hyb_lambda(x, y, random_feats_lambda, lambda_=1, normalize=False):
     x_feat = (1*np.sqrt(1/(random_feats_lambda.shape[0])) *\
                       np.vstack((np.sin(lambda_*random_feats_lambda.dot(x.T)), \
                                 np.cos(lambda_*random_feats_lambda.dot(x.T))))).T
-      
+     
     del x
     
     y = y * normalizer
@@ -164,11 +151,9 @@ def gau_hyb_lambda(x, y, random_feats_lambda, lambda_=1, normalize=False):
                                 np.cos(lambda_*random_feats_lambda.dot(y.T))))).T
     
     del y  
+  
     return np.dot(x_feat, y_feat.T)
 
-'''
-ANGULAR HYBRID: COMBINING THE FAVOR+ AND RFF USING THE ANGULAR KERNEL LINEARIZATION
-'''
 
 def ang_hyb_att(x, y, random_feats_sfm, random_feats_lambda, normalize=True):
 
@@ -184,9 +169,6 @@ def ang_hyb_att(x, y, random_feats_sfm, random_feats_lambda, normalize=True):
     del approx_softmax_trig_hyb, approx_softmax_pos_hyb, approx_softmax_ang
     return approx_softmax_hyb_ang
 
-'''
-GAUSSIAN HYBRID: COMBINING THE FAVOR+ AND RFF USING THE GAUSSIAN LAMBDA KERNEL LINEARIZATION
-'''
 def gau_hyb_att(x, y, random_feats_sfm, random_feats_lambda, normalize=True):
 
     approx_softmax_trig_hyb = trig_att(x, y, random_feats_sfm, normalize=True)
@@ -200,6 +182,3 @@ def gau_hyb_att(x, y, random_feats_sfm, random_feats_lambda, normalize=True):
 
     del approx_softmax_trig_hyb, approx_softmax_pos_hyb, approx_softmax_gau
     return approx_softmax_hyb_gau
-
-
-
