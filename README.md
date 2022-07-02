@@ -1,4 +1,6 @@
-Code to run hybrid sampling schemes to compare against the softmax sampling. All experiments are run on langauge modeling tasks. The datasets used are Penn Tree Bank, Wikitext 2 and Wikitext 103. We will just use a LSTM/biLSTM for all the experiments. The goal here is to prove the efficacy of these hybrid schemes and not the model itself. The code supports some experiments in our work "Hybrid Random features" https://arxiv.org/pdf/2110.04367.pdf
+Code to run hybrid sampling schemes to compare against the softmax sampling. The code can be used to replicate the results in our ICLR paper https://openreview.net/pdf?id=EMigfE6ZeS.
+
+All experiments are run on langauge modeling tasks. The datasets used are Penn Tree Bank, Wikitext 2 and Wikitext 103. We will just use a LSTM/biLSTM for all the experiments. The goal here is to prove the efficacy of these hybrid schemes and not the model itself. The code supports some experiments in our work "Hybrid Random features" https://arxiv.org/pdf/2110.04367.pdf
 <br/>
 Added: sampled softmax. This is a simple reimplementation of https://www.tensorflow.org/api_docs/python/tf/nn/sampled_softmax_loss
 <br/>
